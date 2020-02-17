@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CD0186E523FB348B0002E4C1 /* cubes_shader.metal in Sources */ = {isa = PBXBuildFile; fileRef = CD0186E423FB348B0002E4C1 /* cubes_shader.metal */; };
+		CD0186E723FB53930002E4C1 /* math_util.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0186E623FB53930002E4C1 /* math_util.swift */; };
 		CD4544A023FB286F001525EA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD45449F23FB286F001525EA /* AppDelegate.swift */; };
 		CD4544A223FB286F001525EA /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4544A123FB286F001525EA /* SceneDelegate.swift */; };
 		CD4544A423FB286F001525EA /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4544A323FB286F001525EA /* ViewController.swift */; };
@@ -16,6 +18,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		CD0186E423FB348B0002E4C1 /* cubes_shader.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = cubes_shader.metal; sourceTree = "<group>"; };
+		CD0186E623FB53930002E4C1 /* math_util.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = math_util.swift; sourceTree = "<group>"; };
 		CD45449C23FB286F001525EA /* 01_cubes_metal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = 01_cubes_metal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD45449F23FB286F001525EA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CD4544A123FB286F001525EA /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -63,6 +67,8 @@
 				CD4544A823FB2870001525EA /* Assets.xcassets */,
 				CD4544AA23FB2870001525EA /* LaunchScreen.storyboard */,
 				CD4544AD23FB2870001525EA /* Info.plist */,
+				CD0186E423FB348B0002E4C1 /* cubes_shader.metal */,
+				CD0186E623FB53930002E4C1 /* math_util.swift */,
 			);
 			path = 01_cubes_metal;
 			sourceTree = "<group>";
@@ -138,9 +144,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD0186E723FB53930002E4C1 /* math_util.swift in Sources */,
 				CD4544A423FB286F001525EA /* ViewController.swift in Sources */,
 				CD4544A023FB286F001525EA /* AppDelegate.swift in Sources */,
 				CD4544A223FB286F001525EA /* SceneDelegate.swift in Sources */,
+				CD0186E523FB348B0002E4C1 /* cubes_shader.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
