@@ -11,7 +11,7 @@ using namespace metal;
 
 
 struct PosColorVertex {
-    float3 xyz;
+    packed_float3 xyz;
     uint32_t abgr;
 };
 
