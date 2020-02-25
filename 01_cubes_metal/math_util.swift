@@ -56,3 +56,24 @@ public func mtxProj(fovy: Float, aspect: Float, near: Float, far: Float) -> floa
     
     return mtxProjXYWH(x: 0.0, y: 0.0, width: width, height: height, near: near, far: far)
 }
+
+public func matrixRotate(x: Float, y: Float) -> float4x4 {
+    let sx = sin(x)
+    let cx = cos(x)
+    let sy = sin(y)
+    let cy = sin(y)
+    
+    var result = float4x4(0.0)
+    
+    result[0][0] = cy
+    result[0][2] = sy
+    result[1][0] = sx * sy
+    result[1][1] = cx
+    result[1][2] = -(sx * cy)
+    result[2][0] = -(cx * sy)
+    result[2][1] = sx
+    result[2][2] = cx * cy
+    result[3][3] = 1.0
+    
+    return result
+}
