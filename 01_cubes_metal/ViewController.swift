@@ -51,6 +51,7 @@ class ViewController: UIViewController, MTKViewDelegate {
     var vertexBuffer: MTLBuffer? = nil
     var indexBuffer: MTLBuffer? = nil
     var pipelineState: MTLRenderPipelineState? = nil
+    var startTime: Double = CACurrentMediaTime()
     
     @IBOutlet weak var mtkView: MTKView! {
         didSet {
@@ -102,6 +103,9 @@ class ViewController: UIViewController, MTKViewDelegate {
     
     func draw(in view: MTKView) {
         guard let drawable = view.currentDrawable else { return }
+        
+        let currentTime = CACurrentMediaTime()
+        let offsetTime = currentTime - startTime
         
         let commandBuffer = commandQueue?.makeCommandBuffer()
         let renderEncoder = commandBuffer?.makeRenderCommandEncoder(descriptor: view.currentRenderPassDescriptor!)
