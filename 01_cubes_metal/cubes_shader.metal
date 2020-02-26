@@ -27,10 +27,11 @@ vertex FragmentData vertexShader(uint vertexID [[vertex_id]],
     FragmentData output;
     
     output.position = modelViewProjMatrix * float4(vertices[vertexID].xyz, 1.0f);
-    output.color = float4(vertices[vertexID].abgr & 0xFF,
-                          vertices[vertexID].abgr >> 8 & 0xFF,
+    output.color = float4(vertices[vertexID].abgr >> 24 & 0xFF,
                           vertices[vertexID].abgr >> 16 & 0xFF,
-                          vertices[vertexID].abgr >> 24 & 0xFF);
+                          vertices[vertexID].abgr >> 8 & 0xFF,
+                          vertices[vertexID].abgr & 0xFF
+                          );
     
     return output;
 }

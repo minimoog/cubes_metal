@@ -44,6 +44,22 @@ let cubeTriStrip: [Int16] =
     5,
 ];
 
+let triList: [Int16] =
+[
+    0, 1, 2, // 0
+    1, 3, 2,
+    4, 6, 5, // 2
+    5, 6, 7,
+    0, 2, 4, // 4
+    4, 2, 6,
+    1, 5, 3, // 6
+    5, 7, 3,
+    0, 4, 1, // 8
+    4, 5, 1,
+    2, 3, 6, // 10
+    6, 3, 7,
+]
+
 class ViewController: UIViewController, MTKViewDelegate {
     
     var commandQueue: MTLCommandQueue? = nil
@@ -69,7 +85,7 @@ class ViewController: UIViewController, MTKViewDelegate {
         commandQueue = mtkView.device?.makeCommandQueue()
         
         vertexBuffer = mtkView.device?.makeBuffer(bytes: cubeVertices, length: cubeVertices.count * MemoryLayout<PosColorVertex>.stride, options: [])
-        indexBuffer = mtkView.device?.makeBuffer(bytes: cubeTriStrip, length: cubeTriStrip.count * MemoryLayout<Int16>.stride, options: [])
+        indexBuffer = mtkView.device?.makeBuffer(bytes: cubeTriStrip, length: triList.count * MemoryLayout<Int16>.stride, options: [])
         
         pipelineState = loadShader()
     }
@@ -107,22 +123,40 @@ class ViewController: UIViewController, MTKViewDelegate {
         let currentTime = CACurrentMediaTime()
         let offsetTime = currentTime - startTime
         
+        let width = view.drawableSize.width
+        let height = view.drawableSize.height
+        
         let commandBuffer = commandQueue?.makeCommandBuffer()
         let renderEncoder = commandBuffer?.makeRenderCommandEncoder(descriptor: view.currentRenderPassDescriptor!)
         renderEncoder?.setViewport(MTLViewport(originX: 0.0,
                                                originY: 0.0,
-                                               width: Double(view.drawableSize.width),
-                                               height: Double(view.drawableSize.height),
+                                               width: Double(width),
+                                               height: Double(height),
                                                znear: -1.0, zfar: 1.0))
         
         let viewMatrix = matrixLookAt(eye: [0.0, 0.0, -35.0], at: [0.0, 0.0, 0.0], up: [0.0, 1.0, 0.0])
-        let projMatrix = mtxProj(fovy: 60.0, aspect: 1.0, near: 0.1, far: 100.0)
-        var finalMatrix = projMatrix * viewMatrix
+        let projMatrix = mtxProj(fovy: 60.0, aspect: Float(width) / Float(height), near: 0.1, far: 100.0)
+        let projViewMatrix = projMatrix * viewMatrix
         
-        renderEncoder?.setVertexBytes(&finalMatrix, length: MemoryLayout<float4x4>.size, index: 1)
+        //renderEncoder?.setVertexBytes(&projViewMatrix, length: MemoryLayout<float4x4>.size, index: 1)
         renderEncoder?.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
         renderEncoder?.setRenderPipelineState(pipelineState!)
-        renderEncoder?.drawIndexedPrimitives(type: .triangleStrip, indexCount: cubeTriStrip.count, indexType: .uint16, indexBuffer: indexBuffer!, indexBufferOffset: 0)
+        //renderEncoder?.setCullMode(.front)
+        
+        for yy in 5..<6 {
+            for xx in 5..<6 {
+                var modelMatrix = matrixRotate(x: Float(offsetTime) + Float(xx) * 0.21, y: Float(offsetTime) + Float(yy) * 0.37)
+                modelMatrix[3][0] = -15.0 + Float(xx) * 3.0
+                modelMatrix[3][1] = -15.0 + Float(yy) * 3.0
+                modelMatrix[3][2] = 0.0
+                
+                var finalMatrix = projViewMatrix * modelMatrix
+                
+                renderEncoder?.setVertexBytes(&finalMatrix, length: MemoryLayout<float4x4>.size, index: 1)
+                renderEncoder?.drawIndexedPrimitives(type: .triangle, indexCount: triList.count, indexType: .uint16, indexBuffer: indexBuffer!, indexBufferOffset: 0)
+            }
+        }
+        
         renderEncoder?.endEncoding()
         
         commandBuffer?.present(drawable)
