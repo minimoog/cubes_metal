@@ -9,71 +9,65 @@
 import Foundation
 import simd
 
-public func matrixLookAt(eye: simd_float3, at: simd_float3, up: simd_float3) -> float4x4 {
-    let view: simd_float3 = normalize(eye - at)
-    let uxv = cross(up, view)
-    let right = normalize(uxv)
-    let up = cross(view, right)
-    
-    var output: float4x4 = float4x4()
-    
-    output[0] = simd_float4(right.x, up.x, view.x, 0.0)
-    output[1] = simd_float4(right.y, up.y, view.y, 0.0)
-    output[2] = simd_float4(right.x, up.z, view.z, 0.0)
-    output[3] = simd_float4(-dot(right, eye),
-                            -dot(up, eye),
-                            -dot(view, eye),
-                            1.0)
-    
-    return output
+extension float4x4 {
+    init(fov: Float, aspect: Float, near: Float, far: Float) {
+        let yScale = 1 / tan(fov * 0.5)
+        let xScale = yScale / aspect
+        let zRange = far - near
+        let zScale = -(far + near) / zRange
+        let wzScale = -2 * far * near / zRange
+        
+        let xx = xScale
+        let yy = yScale
+        let zz = zScale
+        let zw = Float(-1)
+        let wz = wzScale
+        
+        self.init(vector4(xx,  0,  0,  0),
+                  vector4( 0, yy,  0,  0),
+                  vector4( 0,  0, zz, zw),
+                  vector4( 0,  0, wz,  0))
+    }
 }
 
-internal func mtxProjXYWH(x: Float, y: Float, width: Float, height: Float, near: Float, far: Float) -> float4x4 {
-    let diff = far - near
-    let aa = (far + near) / diff
-    let bb = (2.0 * far * near) / diff
-    
-    var result: float4x4 = float4x4()
-    
-    result[0][0] = width
-    result[1][1] = height
-    result[2][0] = x
-    result[2][1] = y
-    result[2][2] = -aa
-    result[2][3] = -1.0
-    result[3][2] = -bb
-    
-    return result
+extension float4x4 {
+    init(axis: simd_float3, angle: Float) {
+        let a = normalize(axis)
+        let x = a.x, y = a.y, z = a.z
+        let c = cosf(angle)
+        let s = sinf(angle)
+        let t = 1 - c
+        self.init(simd_float4( t * x * x + c,     t * x * y + z * s, t * x * z - y * s, 0),
+                  simd_float4( t * x * y - z * s, t * y * y + c,     t * y * z + x * s, 0),
+                  simd_float4( t * x * z + y * s, t * y * z - x * s,     t * z * z + c, 0),
+                  simd_float4(                 0,                 0,                 0, 1))
+    }
 }
 
-internal func toRad(deg: Float) -> Float {
-    deg * .pi / 180.0
+extension float4x4 {
+    init(eye: simd_float3, at: simd_float3, up: simd_float3 = simd_float3(0, 1, 0)) {
+        let view = normalize(eye     - at)
+        let uxv = cross(up, view)
+        let right = normalize(uxv)
+        let up = cross(view, right)
+        
+        self.init(vector4( right.x,          up.x,          view.x,         0.0),
+                  vector4( right.y,          up.y,          view.y,         0.0),
+                  vector4( right.z,          up.z,          view.z,         0.0),
+                  vector4(-dot(right, eye), -dot(up, eye), -dot(view, eye), 1.0))
+    }
 }
 
-public func mtxProj(fovy: Float, aspect: Float, near: Float, far: Float) -> float4x4 {
-    let height = 1.0 / tan(toRad(deg: fovy) * 0.5)
-    let width = height * 1.0 / aspect
-    
-    return mtxProjXYWH(x: 0.0, y: 0.0, width: width, height: height, near: near, far: far)
-}
+extension float4x4 {
+    init(rotateX: Float, rotateY: Float) {
+        let sx = sin(rotateX);
+        let cx = cos(rotateX);
+        let sy = sin(rotateY);
+        let cy = cos(rotateY);
 
-public func matrixRotate(x: Float, y: Float) -> float4x4 {
-    let sx = sin(x)
-    let cx = cos(x)
-    let sy = sin(y)
-    let cy = sin(y)
-    
-    var result = float4x4(0.0)
-    
-    result[0][0] = cy
-    result[0][2] = sy
-    result[1][0] = sx * sy
-    result[1][1] = cx
-    result[1][2] = -(sx * cy)
-    result[2][0] = -(cx * sy)
-    result[2][1] = sx
-    result[2][2] = cx * cy
-    result[3][3] = 1.0
-    
-    return result
+        self.init(vector4( cy,   sx * sy,  -cx * sy,    0),
+                  vector4( 0,         cx,        sx,    0),
+                  vector4( sy,  -sx * cy,   cx * cy,    0),
+                  vector4( 0,          0,         0,  1.0))
+    }
 }

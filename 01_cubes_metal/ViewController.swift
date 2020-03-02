@@ -11,21 +11,19 @@ import MetalKit
 import simd
 
 struct PosColorVertex {
-    let x: Float
-    let y: Float
-    let z: Float
-    let c: UInt32
+    let xyz: simd_float3
+    let c: simd_uchar4
 }
 
 let cubeVertices: [PosColorVertex] = [
-    PosColorVertex(x: -1.0, y:  1.0, z:  1.0, c: 0xff000000),
-    PosColorVertex(x:  1.0, y:  1.0, z:  1.0, c: 0xff0000ff),
-    PosColorVertex(x: -1.0, y: -1.0, z:  1.0, c: 0xff00ff00),
-    PosColorVertex(x:  1.0, y: -1.0, z:  1.0, c: 0xff00ffff),
-    PosColorVertex(x: -1.0, y:  1.0, z: -1.0, c: 0xffff0000),
-    PosColorVertex(x:  1.0, y:  1.0, z: -1.0, c: 0xffff00ff),
-    PosColorVertex(x: -1.0, y: -1.0, z: -1.0, c: 0xffffff00),
-    PosColorVertex(x:  1.0, y: -1.0, z: -1.0, c: 0xffffffff)
+    PosColorVertex(xyz: simd_float3([-1.0, 1.0, 1.0]), c: simd_uchar4(0xff, 0x00, 0x00, 0x00)),
+    PosColorVertex(xyz: simd_float3([ 1.0, 1.0, 1.0]), c: simd_uchar4(0xff, 0x00, 0x00, 0xff)),
+    PosColorVertex(xyz: simd_float3([-1.0,-1.0, 1.0]), c: simd_uchar4(0xff, 0x00, 0xff, 0x00)),
+    PosColorVertex(xyz: simd_float3([ 1.0,-1.0, 1.0]), c: simd_uchar4(0xff, 0x00, 0xff, 0xff)),
+    PosColorVertex(xyz: simd_float3([-1.0, 1.0,-1.0]), c: simd_uchar4(0xff, 0xff, 0x00, 0x00)),
+    PosColorVertex(xyz: simd_float3([ 1.0, 1.0,-1.0]), c: simd_uchar4(0xff, 0xff, 0x00, 0xff)),
+    PosColorVertex(xyz: simd_float3([-1.0,-1.0,-1.0]), c: simd_uchar4(0xff, 0xff, 0xff, 0x00)),
+    PosColorVertex(xyz: simd_float3([ 1.0,-1.0,-1.0]), c: simd_uchar4(0xff, 0x00, 0x00, 0xff))
 ]
 
 let cubeTriStrip: [Int16] =
@@ -85,7 +83,7 @@ class ViewController: UIViewController, MTKViewDelegate {
         commandQueue = mtkView.device?.makeCommandQueue()
         
         vertexBuffer = mtkView.device?.makeBuffer(bytes: cubeVertices, length: cubeVertices.count * MemoryLayout<PosColorVertex>.stride, options: [])
-        indexBuffer = mtkView.device?.makeBuffer(bytes: cubeTriStrip, length: triList.count * MemoryLayout<Int16>.stride, options: [])
+        indexBuffer = mtkView.device?.makeBuffer(bytes: cubeTriStrip, length: cubeTriStrip.count * MemoryLayout<Int16>.stride, options: [])
         
         pipelineState = loadShader()
     }
@@ -134,18 +132,17 @@ class ViewController: UIViewController, MTKViewDelegate {
                                                height: Double(height),
                                                znear: -1.0, zfar: 1.0))
         
-        let viewMatrix = matrixLookAt(eye: [0.0, 0.0, -35.0], at: [0.0, 0.0, 0.0], up: [0.0, 1.0, 0.0])
-        let projMatrix = mtxProj(fovy: 60.0, aspect: Float(width) / Float(height), near: 0.1, far: 100.0)
+        let viewMatrix = float4x4(eye: [0.0, 0.0, -35.0], at: [0.0, 0.0, 0.0])
+        let projMatrix = float4x4(fov: 45.0, aspect: Float(width) / Float(height), near: 0.1, far: 100.0)
         let projViewMatrix = projMatrix * viewMatrix
         
-        //renderEncoder?.setVertexBytes(&projViewMatrix, length: MemoryLayout<float4x4>.size, index: 1)
         renderEncoder?.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
         renderEncoder?.setRenderPipelineState(pipelineState!)
-        //renderEncoder?.setCullMode(.front)
+        renderEncoder?.setCullMode(.back)
         
-        for yy in 5..<6 {
-            for xx in 5..<6 {
-                var modelMatrix = matrixRotate(x: Float(offsetTime) + Float(xx) * 0.21, y: Float(offsetTime) + Float(yy) * 0.37)
+        for yy in 0..<11 {
+            for xx in 0..<11 {
+                var modelMatrix = float4x4(rotateX: Float(offsetTime) + Float(xx) * 0.21, rotateY: Float(offsetTime) + Float(yy) * 0.37)
                 modelMatrix[3][0] = -15.0 + Float(xx) * 3.0
                 modelMatrix[3][1] = -15.0 + Float(yy) * 3.0
                 modelMatrix[3][2] = 0.0
@@ -153,7 +150,7 @@ class ViewController: UIViewController, MTKViewDelegate {
                 var finalMatrix = projViewMatrix * modelMatrix
                 
                 renderEncoder?.setVertexBytes(&finalMatrix, length: MemoryLayout<float4x4>.size, index: 1)
-                renderEncoder?.drawIndexedPrimitives(type: .triangle, indexCount: triList.count, indexType: .uint16, indexBuffer: indexBuffer!, indexBufferOffset: 0)
+                renderEncoder?.drawIndexedPrimitives(type: .triangleStrip, indexCount: cubeTriStrip.count, indexType: .uint16, indexBuffer: indexBuffer!, indexBufferOffset: 0)
             }
         }
         
