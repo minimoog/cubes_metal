@@ -42,26 +42,9 @@ let cubeTriStrip: [Int16] =
     5,
 ];
 
-let triList: [Int16] =
-[
-    0, 1, 2, // 0
-    1, 3, 2,
-    4, 6, 5, // 2
-    5, 6, 7,
-    0, 2, 4, // 4
-    4, 2, 6,
-    1, 5, 3, // 6
-    5, 7, 3,
-    0, 4, 1, // 8
-    4, 5, 1,
-    2, 3, 6, // 10
-    6, 3, 7,
-]
-
 class ViewController: UIViewController, MTKViewDelegate {
     
     var commandQueue: MTLCommandQueue? = nil
-    //var vertexMtx: MTLBuffer? = nil
     var vertexBuffer: MTLBuffer? = nil
     var indexBuffer: MTLBuffer? = nil
     var pipelineState: MTLRenderPipelineState? = nil
@@ -89,26 +72,20 @@ class ViewController: UIViewController, MTKViewDelegate {
     }
 
     func loadShader() -> MTLRenderPipelineState? {
-        do {
-            let library = try mtkView.device?.makeDefaultLibrary()
-            
-            let vertexShader = library?.makeFunction(name: "vertexShader")
-            let fragmentShader = library?.makeFunction(name: "fragmentShader")
-            
-            let pipelineDescriptor = MTLRenderPipelineDescriptor()
-            pipelineDescriptor.vertexFunction = vertexShader
-            pipelineDescriptor.fragmentFunction = fragmentShader
-            pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
-            pipelineDescriptor.depthAttachmentPixelFormat = .depth32Float
-            
-            let renderPipelineState = try? mtkView.device?.makeRenderPipelineState(descriptor: pipelineDescriptor)
-            
-            return renderPipelineState
-        } catch let error as NSError {
-            print(error)
-            
-            return nil
-        }
+        let library = mtkView.device?.makeDefaultLibrary()
+        
+        let vertexShader = library?.makeFunction(name: "vertexShader")
+        let fragmentShader = library?.makeFunction(name: "fragmentShader")
+        
+        let pipelineDescriptor = MTLRenderPipelineDescriptor()
+        pipelineDescriptor.vertexFunction = vertexShader
+        pipelineDescriptor.fragmentFunction = fragmentShader
+        pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
+        pipelineDescriptor.depthAttachmentPixelFormat = .depth32Float
+        
+        let renderPipelineState = try? mtkView.device?.makeRenderPipelineState(descriptor: pipelineDescriptor)
+        
+        return renderPipelineState
      }
     
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
